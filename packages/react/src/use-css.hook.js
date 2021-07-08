@@ -3,12 +3,12 @@ import {Scoped} from './scoped.component.js'
 import {styleTags, incrementCounter, transformCss} from '@kremling/core/src/style-element-utils.js'
 
 export function useCss(css, overrideNamespace) {
-  const isPostCss = typeof css === 'object'
-  if (isPostCss && !(css.id && typeof css.styles === 'string')) {
+  const cssIsPrebuilt = typeof css === 'object'
+  if (cssIsPrebuilt && !(css.id && typeof css.styles === 'string')) {
     throw Error(`Kremling's "useCss" hook requires "id" and "styles" properties when using the kremling-loader`)
   }
-  const namespace = overrideNamespace || (isPostCss && css.namespace) || Scoped.defaultNamespace
-  const [styleElement, setStyleElement] = useState(() => getStyleElement(isPostCss, css, namespace, true))
+  const namespace = overrideNamespace || (cssIsPrebuilt && css.namespace) || Scoped.defaultNamespace
+  const [styleElement, setStyleElement] = useState(() => getStyleElement(cssIsPrebuilt, css, namespace, true))
   useStyleElement()
 
   return {
@@ -17,25 +17,25 @@ export function useCss(css, overrideNamespace) {
 
   function useStyleElement() {
     useLayoutEffect(() => {
-      const newStyleElement = getStyleElement(isPostCss, css, namespace)
+      const newStyleElement = getStyleElement(cssIsPrebuilt, css, namespace)
       setStyleElement(newStyleElement)
 
       return () => {
         if (--styleElement.kremlings === 0) {
-          const rawCss = isPostCss ? css.styles : css
+          const rawCss = cssIsPrebuilt ? css.styles : css
           document.head.removeChild(styleElement)
           delete styleTags[rawCss]
         }
       }
-    }, [css, namespace, isPostCss])
+    }, [css, namespace, cssIsPrebuilt])
   }
 }
 
-function getStyleElement(isPostCss, css, namespace, incrementKremingsIfFound = false) {
-  const kremlingAttr = isPostCss ? namespace : `data-${namespace}`
-  const kremlingValue = isPostCss ? css.id : incrementCounter()
+function getStyleElement(cssIsPrebuilt, css, namespace, incrementKremingsIfFound = false) {
+  const kremlingAttr = cssIsPrebuilt ? namespace : `data-${namespace}`
+  const kremlingValue = cssIsPrebuilt ? css.id : incrementCounter()
 
-  let styleElement = isPostCss ? styleTags[css.styles] : styleTags[css]
+  let styleElement = cssIsPrebuilt ? styleTags[css.styles] : styleTags[css]
 
   if (styleElement) {
     // This css is already being used by another instance of the component, or another component altogether.
@@ -44,8 +44,8 @@ function getStyleElement(isPostCss, css, namespace, incrementKremingsIfFound = f
     }
   } else {
     const kremlingSelector = `[${kremlingAttr}='${kremlingValue}']`
-    const rawCss = isPostCss ? css.styles : css
-    const cssToInsert = isPostCss ? css.styles : transformCss(css, kremlingSelector)
+    const rawCss = cssIsPrebuilt ? css.styles : css
+    const cssToInsert = cssIsPrebuilt ? css.styles : transformCss(css, kremlingSelector)
 
     styleElement = document.createElement('style')
     styleElement.type = 'text/css'

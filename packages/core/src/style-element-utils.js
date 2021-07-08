@@ -37,13 +37,13 @@ export function transformCss(css, kremlingSelector) {
 
 export function newCssState(props, defaultNamespace) {
   const css = props.postcss || props.css
-  const cssIsBuilt = Boolean(css && css.id)
-  const namespace = (cssIsBuilt ? css.namespace : props.namespace) || defaultNamespace;
-  const rawCss = cssIsBuilt ? css.styles : css
+  const cssIsPrebuilt = Boolean(css && css.id)
+  const namespace = (cssIsPrebuilt ? css.namespace : props.namespace) || defaultNamespace;
+  const rawCss = cssIsPrebuilt ? css.styles : css
 
   let styleRef, kremlingAttr, kremlingAttrValue
 
-  if (!cssIsBuilt) {
+  if (!cssIsPrebuilt) {
     if (typeof css !== 'string') {
       return
     }
@@ -66,11 +66,11 @@ export function newCssState(props, defaultNamespace) {
   } else {
     // The attribute for namespacing the css
     kremlingAttr = namespace;
-    kremlingAttrValue = cssIsBuilt ? css.id : incrementCounter();
+    kremlingAttrValue = cssIsPrebuilt ? css.id : incrementCounter();
 
     // The css to append to the dom
     const kremlingSelector = `[${kremlingAttr}="${kremlingAttrValue}"]`;
-    const transformedCSS = cssIsBuilt ? rawCss : transformCss(rawCss, kremlingSelector)
+    const transformedCSS = cssIsPrebuilt ? rawCss : transformCss(rawCss, kremlingSelector)
 
     // The dom element
     const el = document.createElement('style');
@@ -85,7 +85,7 @@ export function newCssState(props, defaultNamespace) {
   }
 
   return {
-    cssIsBuilt,
+    cssIsPrebuilt,
     rawCss,
     styleRef,
     kremlingAttr,

@@ -1,0 +1,12 @@
+{
+  "name": "root",
+  "private": true,
+  "scripts": {
+    "start": "lerna run start --parallel --stream",
+    "bootstrap": "lerna clean -y && lerna bootstrap"
+  },
+  "workspaces": ["packages/*"],
+  "devDependencies": {
+    "lerna": "^3.20.2"
+  }
+}
